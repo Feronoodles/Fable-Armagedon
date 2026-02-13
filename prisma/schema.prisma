@@ -1,0 +1,217 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== AUTH MODELS ====================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  player        Player?
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==================== GAME MODELS ====================
+
+model Player {
+  id            String         @id @default(cuid())
+  userId        String         @unique
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username      String         @unique
+  level         Int            @default(1)
+  experience    Int            @default(0)
+  gold          Int            @default(1000)
+  gems          Int            @default(100)
+  wins          Int            @default(0)
+  losses        Int            @default(0)
+  draws         Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  cards         PlayerCard[]
+  packs         PlayerPack[]
+  decks         Deck[]
+}
+
+// ==================== CARD SYSTEM ====================
+
+model Card {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  cost          Int
+  attack        Int?
+  defense       Int?
+  
+  // Tipos y categorías
+  cardType      String         // CRIATURA, HECHIZO, ALTERADOR
+  rarity        String         // COMUN, INFRECUENTE, RARA, EPICA, LEGENDARIA, CELESTIAL
+  
+  // Elementos (puede tener múltiples)
+  manaTypes     String[]       // FUEGO, AGUA, NATURALEZA, RAYO, VACIO, NORMAL, TIERRA, METAL
+  attribute     String         // Elemento principal
+  
+  // Subtipos/categorías
+  subtypes      String[]       // DINOSAURIO, DRAGON, HUMANO, MECHA, ELFO, ORCO, RENACIDO, VEILBORN, etc.
+  
+  // Habilidades
+  abilities     Json?          // Array de objetos con nombre, descripción y efecto
+  
+  // Metadata
+  imageUrl      String?
+  flavorText    String?
+  artist        String?
+  createdAt     DateTime       @default(now())
+  
+  // Relaciones
+  playerCards   PlayerCard[]
+  deckCards     DeckCard[]
+  
+  @@index([rarity])
+  @@index([cardType])
+  @@index([attribute])
+}
+
+model PlayerCard {
+  id            String         @id @default(cuid())
+  playerId      String
+  cardId        String
+  quantity      Int            @default(1)
+  obtainedAt    DateTime       @default(now())
+  
+  player        Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  card          Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  @@unique([playerId, cardId])
+  @@index([playerId])
+}
+
+// ==================== PACK SYSTEM ====================
+
+model PackType {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  imageUrl      String?
+  
+  // Precios
+  priceGold     Int            @default(0)
+  priceGems     Int            @default(0)
+  
+  // Configuración de contenido
+  cardsPerPack  Int            @default(8)
+  
+  // Probabilidades (en porcentaje)
+  commonChance      Int        @default(60)
+  uncommonChance    Int        @default(25)
+  rareChance        Int        @default(10)
+  epicChance        Int        @default(4)
+  legendaryChance   Int        @default(1)
+  celestialChance   Int        @default(0)
+  
+  // Garantías
+  guaranteeRare     Boolean    @default(true)
+  
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  
+  playerPacks   PlayerPack[]
+}
+
+model PlayerPack {
+  id            String         @id @default(cuid())
+  playerId      String
+  packTypeId    String
+  quantity      Int            @default(1)
+  obtainedAt    DateTime       @default(now())
+  
+  player        Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  packType      PackType       @relation(fields: [packTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([playerId])
+}
+
+// ==================== DECK SYSTEM ====================
+
+model Deck {
+  id            String         @id @default(cuid())
+  playerId      String
+  name          String
+  description   String?
+  isActive      Boolean        @default(false)
+  
+  // Estadísticas del mazo
+  totalCards    Int            @default(0)
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  player        Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  deckCards     DeckCard[]
+  
+  @@index([playerId])
+}
+
+model DeckCard {
+  id            String         @id @default(cuid())
+  deckId        String
+  cardId        String
+  quantity      Int            @default(1)
+  
+  deck          Deck           @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  card          Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  
+  @@unique([deckId, cardId])
+  @@index([deckId])
+}
