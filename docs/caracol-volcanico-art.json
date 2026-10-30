@@ -1,0 +1,8 @@
+{
+  "card": "Caracol Volcánico",
+  "tool": "built-in image_gen",
+  "useCase": "stylized-concept",
+  "asset": "public/assets/cards/caracol-volcanico.webp",
+  "original": ".artwork/cards/caracol-volcanico.png",
+  "prompt": "Use case: stylized-concept. Asset type: original full-bleed square collectible-card illustration for Fable Armageddon, Volcán Dormido expansion. Primary request: Caracol Volcánico, a RARE Fire creature of subtype Alimaña (Vermin), a small slow creature with 1 attack and 4 defense. A clearly recognizable volcanic snail crawls over dark cooling basalt: a heavy, thick armored SPIRAL shell of obsidian with glowing orange magma seams, a low elongated charcoal-colored snail foot, two long slender eye stalks and two shorter feelers, a subtle molten slime trail. The shell looks protective and substantial, the creature looks low and grounded rather than aggressive. Environment: close view of volcanic ash and cracked lava rock with a distant hazy caldera, tiny drifting embers, subtle ancient ruined stone in background for consistency with dark fantasy world. Style: premium painterly cinematic dark-fantasy trading-card artwork with finely textured stone, organic anatomy and warm molten light. Composition: three-quarter side view, entire snail silhouette readable in the central 80 percent, spiral shell prominently visible, modest ground-level scale, strong thumbnail readability, warm orange-red accents against cool black basalt and smoky purple shadows. One snail only. No dragons, humanoids, extra legs, insect limbs, horns, text, card frames, borders, logos or watermarks."
+}

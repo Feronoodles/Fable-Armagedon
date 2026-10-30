@@ -1,0 +1,8 @@
+{
+  "card": "Volcán del fin",
+  "tool": "built-in image_gen",
+  "useCase": "stylized-concept",
+  "asset": "public/assets/cards/volcan-del-fin.webp",
+  "original": ".artwork/cards/volcan-del-fin.png",
+  "prompt": "Use case: stylized-concept. Asset type: original fantasy collectible-card illustration for Fable Armageddon, the Fire expansion Volcán Dormido. Primary request: Volcán del fin, an EPIC Fire field card. A colossal black obsidian stratovolcano at the instant its summit fractures, a blazing orange-red caldera with lava rivers cutting through ancient volcanic ruins, ash clouds forming a vast crown, tiny silhouettes of dragons circling high above for scale. Dark fantasy mixed with subtle ancient technological geometry, painterly cinematic trading-card art, richly textured basalt, molten fissures and embers, dramatic infernal light, purple-grey smoke and orange magma. This is a monumental LANDSCAPE / FIELD, not a dragon portrait. Composition: square image, striking volcano centered in upper-middle, readable iconic silhouette at small card size, foreground sacrificial stone altar kept small, generous scenic depth, important details within the central 80 percent to support card crops. Epic grandeur, apocalyptic but beautiful, consistent polished fantasy illustration. Full-bleed art only, no text, no border, no card frame, no logos, no watermark. Save the generated illustration for use as a game asset."
+}

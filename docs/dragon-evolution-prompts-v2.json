@@ -1,0 +1,55 @@
+{
+  "tool": "built-in image_gen",
+  "style": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. ",
+  "cards": [
+    {
+      "name": "Huevo de Dragón Volcánico",
+      "slug": "huevo-de-dragon-volcanico",
+      "stage": "1 · Huevo",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. STAGE 1, COMMON EGG. Macro close-up of ONE small dark basalt dragon egg nestled in a quiet bed of pale cooled ash and black pebbles. Thin amber cracks and a tiny newly emerging claw reveal life inside. Rounded modest shape, gentle warm inner light, smoky slate-blue background, intimate low camera. The egg is the unmistakable focal point. No adult dragon, no city, no inferno, no wings, no crown.",
+      "file": "public/assets/cards/huevo-de-dragon-volcanico-v2.webp"
+    },
+    {
+      "name": "Dragón Volcánico",
+      "slug": "dragon-volcanico",
+      "stage": "2 · Joven",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. STAGE 2, COMMON JUVENILE. A lean young volcanic dragon, roughly horse-sized, crouching on a cool gray basalt ridge beside a small stream of lava. Four slender legs, smooth charcoal-bronze scales, two short backward horn buds, small folded copper-orange membrane wings. Curious alert face, restrained tiny amber chest fissure. Full body in THREE-QUARTER SIDE PROFILE, cool dawn mist and open sky. It should look early in its evolution, agile and vulnerable, not huge, not armored, not regal. No crown, no battlefield, no giant city.",
+      "file": "public/assets/cards/dragon-volcanico-v2.webp"
+    },
+    {
+      "name": "Dragón Volcánico Ancestral",
+      "slug": "dragon-volcanico-ancestral",
+      "stage": "3 · Ancestral",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. STAGE 3, RARE ANCIENT ELDER. A very old volcanic dragon with a LONG SERPENTINE NECK, weathered ashen gray and pale obsidian scales, long branching antler-like basalt horns, a mineral-crusted beard and enormous timeworn translucent ember-veined wings. Coiled serenely around the broken white stone pillars of a mountaintop shrine above a sea of clouds. Elegant and ancient, not heavily armored. Vertical S-shaped silhouette, calm intelligence, pale dawn, soft copper and ivory palette, wide camera showing its long sinuous body. No weapons, no crown, no red burning city.",
+      "file": "public/assets/cards/dragon-volcanico-ancestral-v2.webp"
+    },
+    {
+      "name": "Dragón de Guerra Volcánico",
+      "slug": "dragon-de-guerra-volcanico",
+      "stage": "4 · Guerra",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. STAGE 4, EPIC WAR BEAST. A massive low-slung volcanic siege dragon with a broad muscular chest, heavy iron-black basalt armor plates, jagged dark-red dorsal spines, two battering-ram horns, scarred amber eyes, and enormous torn crimson wings. Charging diagonally TOWARD CAMERA through a dark ash-covered battlefield, crushing a broken siege engine under one huge foreclaw. Aggressive compact quadruped silhouette, dense powerful mass, sparks trailing backward, smoky charcoal and blood-red palette. Clearly heavier and more martial than the ancient serpentlike elder. No crown, no golden throne, no cosmic halo, no slender neck.",
+      "file": "public/assets/cards/dragon-de-guerra-volcanico-v2.webp"
+    },
+    {
+      "name": "General Volcánico Kharzeth",
+      "slug": "general-volcanico-kharzeth",
+      "stage": "Comandante · Épica",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. EPIC COMMANDER BRANCH, KHARZETH. A tall BIPEDAL DRAGON GENERAL with an unmistakable draconic head, black-red scales, a long heavy tail, folded red wings, and fitted dark bronze military armor. Standing upright on two legs at a stone war-table on a volcanic fortress balcony, one claw resting on a jagged obsidian spear, looking down at tiny distant troop formations. Intelligent commanding profile, full figure, disciplined posture, restrained amber chest core. This is a dragon in humanoid military posture, not a quadruped beast, not a human, not an emperor. Dusk, deep red and cool steel palette. No crown, no giant molten body.",
+      "file": "public/assets/cards/general-volcanico-kharzeth-v2.webp"
+    },
+    {
+      "name": "Emperador Volcánico Ignathor",
+      "slug": "emperador-volcanico-ignathor",
+      "stage": "5 · Emperador",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. STAGE 5, LEGENDARY EMPEROR IGNATHOR. An immense mature volcanic dragon monarch seated upright in regal stillness on a gigantic circular obsidian throne within a vast dark volcanic royal chamber. Symmetrical majestic frontal composition, powerful broad chest, polished obsidian scales with GOLDEN molten seams, a natural five-pronged gold-black horn crown, long sweeping wing mantles folded like a royal cloak, amber eyes. Tiny stairs at the foot of the throne communicate imperial scale. GOLD, amber and absolute black palette, controlled warm shafts of light. Regal authority, sculptural silhouette, no charging action, no busy battlefield, no red full-frame inferno, no six wings, no outer space.",
+      "file": "public/assets/cards/emperador-volcanico-ignathor-v2.webp"
+    },
+    {
+      "name": "Dominus Volcánico Astravor",
+      "slug": "dominus-volcanico-astravor",
+      "stage": "6 · Divinidad celestial",
+      "prompt": "Original finished square trading card illustration for Fable Armageddon, painterly premium dark fantasy with touches of ancient technology. Full bleed, one subject, strong clear silhouette recognizable in a small card. No writing, numbers, borders, card frames or watermark. This is a redesigned volcanic dragon family with clear evolution: small egg -> lean juvenile -> long ancient elder -> armored war beast -> regal emperor -> cosmic deity. Retain the species motif of basalt scales, amber eyes and a glowing chest fissure, but the subject's silhouette, palette, camera angle and environment MUST be distinct for its stage. STAGE 6, CELESTIAL DEITY ASTRAVOR. A transcendent dragon god floating upright above the curved horizon of a planet. Slender impossibly tall central obsidian-and-ivory dragon form with SIX distinct vast luminous wing blades arranged in a radial celestial fan, a white-hot solar chest core, a radiant thin eclipse halo behind its horned head, and a long tail dissolving into a stream of stars. White-hot fire edged with gold and electric-violet plasma, midnight indigo outer space, strong negative space. This must look divine and physically beyond the emperor, an elegant celestial silhouette rather than another orange lava beast. No throne, no ground, no city, no normal two-wing dragon, no typography.",
+      "file": "public/assets/cards/dominus-volcanico-astravor-v2.webp"
+    }
+  ]
+}

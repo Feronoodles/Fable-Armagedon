@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { parseRegistration, RegistrationValidationError } from "@/lib/registration-validation";
 
 export async function POST(req: Request) {
   try {
-    const { username, email, password } = await req.json();
+    const body: unknown = await req.json().catch(() => { throw new RegistrationValidationError("BODY"); });
+    const { username, email, password } = parseRegistration(body);
 
-    if (!username || !email || !password) {
-      return NextResponse.json(
-        { message: "Todos los campos son requeridos" },
-        { status: 400 }
-      );
-    }
-
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
     });
 
     if (existingUser) {
@@ -74,7 +69,9 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error en registro:", error);
+    if (error instanceof RegistrationValidationError)
+      return NextResponse.json({ message: error.message }, { status: 400 });
+    console.error("Error en registro:", error instanceof Error ? error.name : "UnknownError");
     return NextResponse.json(
       { message: "Error al crear el usuario" },
       { status: 500 }

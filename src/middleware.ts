@@ -2,22 +2,13 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware(req) {
+  function middleware() {
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized({ req, token }) {
-        if (
-          req.nextUrl.pathname.startsWith("/menu") ||
-          req.nextUrl.pathname.startsWith("/game") ||
-          req.nextUrl.pathname.startsWith("/collection") ||
-          req.nextUrl.pathname.startsWith("/shop") ||
-          req.nextUrl.pathname.startsWith("/profile")
-        ) {
-          return token !== null;
-        }
-        return true;
+      authorized({ token }) {
+        return token !== null;
       },
     },
     pages: {
@@ -27,5 +18,6 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/menu/:path*", "/game/:path*", "/collection/:path*", "/shop/:path*", "/profile/:path*"],
+  matcher: ["/menu/:path*", "/game/:path*", "/collection/:path*", "/shop/:path*", "/profile/:path*",
+    "/battle/:path*", "/decks/:path*", "/packs/:path*", "/starter-decks/:path*"],
 };

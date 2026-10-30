@@ -76,6 +76,7 @@ model Player {
   wins          Int            @default(0)
   losses        Int            @default(0)
   draws         Int            @default(0)
+  starterDeckKey String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
@@ -95,8 +96,9 @@ model Card {
   defense       Int?
   
   // Tipos y categorías
-  cardType      String         // CRIATURA, HECHIZO, ALTERADOR
+  cardType      String         // CRIATURA, HECHIZO, ALTERADOR, TIERRA
   rarity        String         // COMUN, INFRECUENTE, RARA, EPICA, LEGENDARIA, CELESTIAL
+  expansionKey  String         @default("CORE")
   
   // Elementos (puede tener múltiples)
   manaTypes     String[]       // FUEGO, AGUA, NATURALEZA, RAYO, VACIO, NORMAL, TIERRA, METAL
@@ -121,6 +123,7 @@ model Card {
   @@index([rarity])
   @@index([cardType])
   @@index([attribute])
+  @@index([expansionKey])
 }
 
 model PlayerCard {
@@ -143,6 +146,7 @@ model PackType {
   id            String         @id @default(cuid())
   name          String
   description   String?
+  expansionKey  String?
   imageUrl      String?
   
   // Precios

@@ -1,0 +1,6 @@
+{
+  "tool": "image_gen.imagegen",
+  "asset": "public/assets/ui/citadel-command.webp",
+  "source": ".artwork/ui/citadel-command.png",
+  "prompt": "Use case: stylized-concept. Asset type: original widescreen background illustration for a dark fantasy sci-fi trading card game's command menu. Fable Armageddon world: a monumental ancient obsidian citadel command chamber with blunt brutalist architecture, heavy worn stone pillars, iron plating, bronze mechanisms and restrained teal tactical instruments. An enormous portal/window looks onto a volcanic fortress at dusk, ash embers and muted gold horizon, monumental but quiet. Medieval carved masonry meets practical retro space-strategy command hardware, inspired by the atmosphere of late-1990s hand-painted strategy-game menus, entirely original architecture, no recognizable game characters or franchise assets. Composition: panoramic 16:9 landscape; broad dark stone wall and shadow on LEFT 45 percent for readable menu text, scene detail and dramatic window/fortress concentrated in RIGHT 55 percent. Painterly textured matte finish, cinematic atmospheric depth, charcoal, aged brass, deep burgundy and sparse desaturated teal. Bold readable masses, no busy glowing particles in the text area. No people, no text, no lettering, no logos, no interface elements, no card borders, no watermark."
+}

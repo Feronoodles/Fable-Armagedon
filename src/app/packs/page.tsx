@@ -1,397 +1,83 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/components/I18nProvider";
-import LanguageSelector from "@/components/LanguageSelector";
+import { GameShell, CommandHeading, CommandLoading, CommandEmpty, CommandError } from "@/components/command/GameShell";
+import { CommandDialog } from "@/components/command/CommandDialog";
+import { CommandIcon } from "@/components/command/CommandIcon";
+import { ArchiveCard } from "@/components/command/ArchiveCard";
+import { useGameResource, gameMutation } from "@/components/command/useGameResource";
+import { usePlayer } from "@/components/command/PlayerProvider";
+import { isVolcanPack, MAX_PACK_PURCHASE, VOLCAN_PACK_ART, type FeaturedDrop, type PackOdds } from "@/lib/packs";
+import { CardArt } from "@/components/cards/CardArt";
+import { CardDetail } from "@/components/cards/CardDetail";
+import type { Card } from "@/components/cards/CardItem";
+import { RARITY_APPEARANCE } from "@/lib/card-appearance";
 
-interface Pack {
-  id: string;
-  quantity: number;
-  packType: {
-    name: string;
-    description: string;
-    cardsPerPack: number;
-    commonChance: number;
-    uncommonChance: number;
-    rareChance: number;
-    epicChance: number;
-    legendaryChance: number;
-  };
+interface PackType {
+  id: string; name: string; description?: string; expansionKey?: string | null; imageUrl?: string | null; featuredDrops: FeaturedDrop[]; cardsPerPack: number; priceGold: number; priceGems: number;
+  commonChance: number; uncommonChance: number; rareChance: number; epicChance: number; legendaryChance: number; celestialChance: number; guaranteeRare: boolean;
 }
+interface Pack { id: string; quantity: number; packType: PackType }
+interface PacksData { packs: Pack[]; shopPacks: PackType[]; gold: number; gems: number }
+const RATE_KEYS: [keyof PackOdds, string][] = [["commonChance", "COMUN"], ["uncommonChance", "INFRECUENTE"], ["rareChance", "RARA"], ["epicChance", "EPICA"], ["legendaryChance", "LEGENDARIA"], ["celestialChance", "CELESTIAL"]];
 
-interface Card {
-  id: string;
-  name: string;
-  rarity: string;
-  cardType: string;
-  cost: number;
-  attack?: number;
-  defense?: number;
-  manaTypes: string[];
-  subtypes: string[];
-  abilities?: any[];
-  description?: string;
+function PackVisual({ pack, en }: { pack: PackType; en: boolean }) {
+  const volcanic = isVolcanPack(pack), image = pack.imageUrl || (volcanic ? VOLCAN_PACK_ART : null);
+  return <div className="command-pack-visual" aria-hidden="true"><div className={"command-pack-box" + (volcanic ? " is-volcanic" : "") + (image ? " has-art" : "")}>
+    {image ? <><CardArt card={{ name: pack.name, imageUrl: image }} /><div className="command-pack-cover-title"><small>{volcanic ? (en ? "Fire expansion" : "Expansión de Fuego") : "FABLE ARMAGEDDON"}</small><strong>{pack.name}</strong></div></> : <><CommandIcon name="citadel" /><small>FABLE<br />ARMAGEDDON</small></>}
+  </div></div>;
 }
-
-// Iconos de elementos
-const elementIcons: { [key: string]: string } = {
-  "FUEGO": "🔥",
-  "AGUA": "💧",
-  "NATURALEZA": "🌿",
-  "RAYO": "⚡",
-  "VACIO": "🌑",
-  "NORMAL": "⬜",
-  "TIERRA": "🟤",
-  "METAL": "⚙️"
-};
-
-// Traducciones de subtipos
-const subtypeTranslations: { [key: string]: { es: string; en: string } } = {
-  "DINOSAURIO": { es: "Dinosaurio", en: "Dinosaur" },
-  "DRAGON": { es: "Dragón", en: "Dragon" },
-  "HUMANO": { es: "Humano", en: "Human" },
-  "MECHA": { es: "Mecha", en: "Mecha" },
-  "ELFO": { es: "Elfo", en: "Elf" },
-  "ORCO": { es: "Orco", en: "Orc" },
-  "RENACIDO": { es: "Renacido", en: "Reborn" },
-  "VEILBORN": { es: "The Veilborn", en: "The Veilborn" },
-  "TITAN": { es: "Titán", en: "Titan" }
-};
-
+function PackInfo({ pack, en }: { pack: PackType; en: boolean }) {
+  return <><h2>{pack.name}</h2><p>{pack.description}</p><div className="command-pack-meta">{pack.cardsPerPack} {en ? "cards per pack" : "cartas por sobre"}{pack.celestialChance > 0 && <span className="command-pack-celestial">{pack.celestialChance}% celestial</span>}</div>
+    <details><summary>{en ? "Contents and probabilities" : "Contenido y probabilidades"}</summary><dl className="command-drop-rates">{RATE_KEYS.map(([key, rarity]) => <div key={key} style={{ display: "contents" }}><dt>{en ? RARITY_APPEARANCE[rarity].en : RARITY_APPEARANCE[rarity].es}</dt><dd>{pack[key]}%</dd></div>)}</dl>
+      <p className="command-pack-odds-note">{en ? "Base chance per card. Cards of the same rarity share its probability equally." : "Probabilidad base por carta. Las cartas de una misma rareza comparten su probabilidad por igual."}{pack.guaranteeRare && (en ? " At least one rare or better is guaranteed in each pack." : " Se garantiza al menos una rara o superior por sobre.")}</p>
+      {pack.featuredDrops?.length > 0 && <><p className="command-pack-featured-label">{en ? "Also available in this pack" : "También pueden salir en este sobre"}</p><dl className="command-drop-rates is-featured">{pack.featuredDrops.map(drop => <div key={drop.name} style={{ display: "contents" }}><dt style={{ color: RARITY_APPEARANCE[drop.rarity]?.color }}>{drop.name}</dt><dd>{drop.chance.toLocaleString(en ? "en-US" : "es-PE", { maximumFractionDigits: 3 })}%</dd></div>)}</dl><p className="command-pack-odds-note">{en ? "Special mana uses one card slot. Basic mana is not included." : "El maná especial ocupa una de las cartas del sobre. El maná básico no aparece."}</p></>}
+    </details></>;
+}
+function Purchase({ pack, gold, gems, busy, en, buy }: { pack: PackType; gold: number; gems: number; busy: boolean; en: boolean; buy: (currency: "gold" | "gems", quantity: number) => void }) {
+  const [currency, setCurrency] = useState<"gold" | "gems">(pack.priceGold > 0 ? "gold" : "gems");
+  const [amount, setAmount] = useState("1");
+  const quantity = Number(amount), valid = Number.isSafeInteger(quantity) && quantity >= 1 && quantity <= MAX_PACK_PURCHASE;
+  const unitPrice = currency === "gold" ? pack.priceGold : pack.priceGems, cost = valid ? unitPrice * quantity : 0;
+  const available = currency === "gold" ? gold : gems;
+  return <div className="command-purchase">
+    <div className="command-purchase-fields"><label className="command-field">{en ? "Pay with" : "Pagar con"}<select className="command-select" value={currency} disabled={busy} onChange={event => setCurrency(event.target.value as "gold" | "gems")}>{pack.priceGold > 0 && <option value="gold">{pack.priceGold} {en ? "gold / pack" : "oro / sobre"}</option>}{pack.priceGems > 0 && <option value="gems">{pack.priceGems} {en ? "gems / pack" : "gemas / sobre"}</option>}</select></label><label className="command-field">{en ? "Quantity" : "Cantidad"}<input className="command-input" type="number" inputMode="numeric" min={1} max={MAX_PACK_PURCHASE} step={1} value={amount} disabled={busy} onChange={event => setAmount(event.target.value)} aria-label={(en ? "Quantity of " : "Cantidad de sobres ") + pack.name} aria-invalid={!valid} /></label></div>
+    <div className="command-purchase-total" aria-live="polite"><span>Total</span><strong><CommandIcon name={currency} />{valid ? cost.toLocaleString(en ? "en-US" : "es-PE") : "—"} <small>{currency === "gold" ? (en ? "gold" : "oro") : en ? "gems" : "gemas"}</small></strong></div>
+    <button className="command-button" disabled={busy || !valid || unitPrice <= 0 || available < cost} onClick={() => buy(currency, quantity)}><CommandIcon name="packs" />{busy ? (en ? "Processing…" : "Procesando…") : (en ? "Buy " : "Comprar ") + (valid ? quantity : "") + (en ? (quantity === 1 ? " pack" : " packs") : quantity === 1 ? " sobre" : " sobres")}</button>
+    <p className="command-purchase-hint" aria-live="polite">{!valid ? (en ? "Choose 1–100 packs." : "Elige entre 1 y 100 sobres.") : available < cost ? (en ? "You need " : "Te faltan ") + (cost - available) + (currency === "gold" ? (en ? " gold." : " de oro.") : en ? " gems." : " gemas.") : ""}</p>
+  </div>;
+}
 export default function PacksPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const { t, language, translateCardName } = useI18n();
-  const [packs, setPacks] = useState<Pack[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [openingPack, setOpeningPack] = useState<string | null>(null);
-  const [openedCards, setOpenedCards] = useState<Card[] | null>(null);
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    if (session) {
-      fetchPacks();
-    }
-  }, [session]);
-
-  const fetchPacks = async () => {
-    try {
-      const response = await fetch("/api/packs");
-      const data = await response.json();
-      
-      if (response.ok) {
-        setPacks(data.packs);
-      } else {
-        setError(data.message || "Error");
-      }
-    } catch (err) {
-      setError("Connection error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const openPack = async (packId: string) => {
-    setOpeningPack(packId);
-    setError("");
-
-    try {
-      const response = await fetch("/api/packs/open", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ packId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setOpenedCards(data.cards);
-        await fetchPacks();
-      } else {
-        setError(data.message || "Error");
-      }
-    } catch (err) {
-      setError("Connection error");
-    } finally {
-      setOpeningPack(null);
-    }
-  };
-
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case "COMUN": return "text-gray-400";
-      case "INFRECUENTE": return "text-green-400";
-      case "RARA": return "text-blue-400";
-      case "EPICA": return "text-purple-400";
-      case "LEGENDARIA": return "text-yellow-400";
-      case "CELESTIAL": return "bg-gradient-to-r from-purple-500 to-white bg-clip-text text-transparent";
-      default: return "text-white";
-    }
-  };
-
-  const getRarityBorder = (rarity: string) => {
-    switch (rarity) {
-      case "COMUN": return "border-gray-400";
-      case "INFRECUENTE": return "border-green-400";
-      case "RARA": return "border-blue-400";
-      case "EPICA": return "border-purple-400";
-      case "LEGENDARIA": return "border-yellow-400";
-      case "CELESTIAL": return "border-purple-200";
-      default: return "border-gray-600";
-    }
-  };
-
-  const getRarityTranslation = (rarity: string) => {
-    switch (rarity) {
-      case "COMUN": return t("cards.common");
-      case "INFRECUENTE": return t("cards.uncommon");
-      case "RARA": return t("cards.rare");
-      case "EPICA": return t("cards.epic");
-      case "LEGENDARIA": return t("cards.legendary");
-      case "CELESTIAL": return t("cards.celestial");
-      default: return rarity;
-    }
-  };
-
-  const getSubtypeTranslation = (subtype: string) => {
-    return subtypeTranslations[subtype]?.[language as keyof typeof subtypeTranslations["DINOSAURIO"]] || subtype;
-  };
-
-  if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-        <div className="text-white text-2xl">{t("common.loading")}</div>
-      </div>
-    );
+  const { language } = useI18n(), en = language === "en";
+  const { data, error, loading, reload } = useGameResource<PacksData>("/api/packs");
+  const { refresh } = usePlayer();
+  const [tab, setTab] = useState<"inventory" | "shop">("inventory"), [busy, setBusy] = useState<string | null>(null);
+  const [message, setMessage] = useState(""), [failure, setFailure] = useState("");
+  const [opened, setOpened] = useState<Card[] | null>(null), [showResults, setShowResults] = useState(false), [selected, setSelected] = useState<Card | null>(null);
+  const inventory = (data?.packs ?? []).filter(pack => pack.quantity > 0);
+  async function buy(pack: PackType, currency: "gold" | "gems", quantity: number) {
+    if (busy || loading) return;
+    setBusy(pack.id); setMessage(""); setFailure("");
+    try { await gameMutation("/api/packs/buy", "POST", { packTypeId: pack.id, currency, quantity }); setMessage(quantity + (en ? (quantity === 1 ? " pack of " : " packs of ") : (quantity === 1 ? " sobre de " : " sobres de ")) + pack.name + (en ? " added to your inventory." : (quantity === 1 ? " añadido a tu inventario." : " añadidos a tu inventario."))); reload(); refresh(); }
+    catch (cause) { setFailure(cause instanceof Error ? cause.message : "Error"); }
+    finally { setBusy(null); }
   }
-
-  if (!session) {
-    return null;
+  async function open(pack: Pack) {
+    if (busy || loading) return;
+    setBusy(pack.id); setMessage(""); setFailure("");
+    try { const result = await gameMutation<{ cards: Card[] }>("/api/packs/open", "POST", { packId: pack.id }); setOpened(result.cards); setShowResults(true); reload(); refresh(); }
+    catch (cause) { setFailure(cause instanceof Error ? cause.message : "Error"); }
+    finally { setBusy(null); }
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* Header */}
-      <header className="bg-gray-900/80 backdrop-blur-md border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500">
-              {t("common.appName")}
-            </h1>
-            <div className="flex items-center gap-4">
-              <LanguageSelector />
-              <nav className="flex gap-4">
-                <button
-                  onClick={() => router.push("/menu")}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  {t("menu.play")}
-                </button>
-                <button
-                  onClick={() => router.push("/collection")}
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  {t("menu.collection")}
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <h2 className="text-4xl font-bold text-white mb-8 text-center">
-          {t("packs.myPacks")}
-        </h2>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-300 text-center">
-            {error}
-          </div>
-        )}
-
-        {/* Modal de detalle de carta */}
-        {selectedCard && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-2xl p-6 max-w-lg w-full border-2 border-gray-600">
-              <div className={`p-6 rounded-xl border-2 ${getRarityBorder(selectedCard.rarity)} bg-gray-700`}>
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className={`text-2xl font-bold ${getRarityColor(selectedCard.rarity)}`}>
-                    {translateCardName(selectedCard.name)}
-                  </h3>
-                  <div className="flex items-center gap-1 bg-gray-800 px-3 py-1 rounded-full">
-                    {selectedCard.manaTypes.map((mana, idx) => (
-                      <span key={idx} className="text-xl">{elementIcons[mana]}</span>
-                    ))}
-                    <span className="text-white font-bold ml-1">{selectedCard.cost}</span>
-                  </div>
-                </div>
-
-                {selectedCard.attack !== undefined && (
-                  <div className="flex gap-4 mb-4">
-                    <div className="bg-gray-800 px-4 py-2 rounded-lg">
-                      <span className="text-gray-400 text-sm">{t("card.attack")}</span>
-                      <p className="text-white font-bold text-xl">{selectedCard.attack}</p>
-                    </div>
-                    <div className="bg-gray-800 px-4 py-2 rounded-lg">
-                      <span className="text-gray-400 text-sm">{t("card.defense")}</span>
-                      <p className="text-white font-bold text-xl">{selectedCard.defense}</p>
-                    </div>
-                  </div>
-                )}
-
-                <p className="text-gray-300 mb-4">{selectedCard.description}</p>
-
-                {selectedCard.subtypes && selectedCard.subtypes.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-gray-400 text-sm mb-2">{t("card.subtypes")}:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCard.subtypes.map((subtype, idx) => (
-                        <span key={idx} className="bg-gray-800 text-yellow-400 px-3 py-1 rounded-full text-sm">
-                          {getSubtypeTranslation(subtype)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedCard.abilities && selectedCard.abilities.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-yellow-400 font-semibold mb-2">{t("card.abilities")}:</p>
-                    <div className="space-y-2">
-                      {selectedCard.abilities.map((ability, idx) => (
-                        <div key={idx} className="bg-gray-800/50 p-3 rounded-lg">
-                          <p className="text-white font-medium">{ability.name}</p>
-                          <p className="text-gray-400 text-sm">{ability.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => setSelectedCard(null)}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 font-bold rounded-lg hover:from-yellow-400 hover:to-orange-400 transition-colors"
-              >
-                {t("packs.close")}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de cartas abiertas */}
-        {openedCards && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-2xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-              <h3 className="text-3xl font-bold text-white mb-6 text-center">
-                {t("packs.cardsObtained")}
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {openedCards.map((card, index) => (
-                  <div
-                    key={index}
-                    onClick={() => setSelectedCard(card)}
-                    className={`bg-gray-700 rounded-xl p-4 text-center hover:scale-105 transition-transform cursor-pointer border-2 ${getRarityBorder(card.rarity)}`}
-                  >
-                    <div className="h-28 bg-gray-600 rounded-lg mb-3 flex items-center justify-center relative">
-                      <span className="text-4xl">🎴</span>
-                      <div className="absolute top-1 right-1 flex items-center gap-1 bg-gray-900/80 px-2 py-1 rounded-full">
-                        {card.manaTypes.slice(0, 2).map((mana, idx) => (
-                          <span key={idx} className="text-sm">{elementIcons[mana]}</span>
-                        ))}
-                        <span className="text-white text-xs font-bold">{card.cost}</span>
-                      </div>
-                    </div>
-                    <h4 className={`font-bold text-sm mb-1 ${getRarityColor(card.rarity)}`}>
-                      {translateCardName(card.name)}
-                    </h4>
-                    {card.subtypes && card.subtypes.length > 0 && (
-                      <p className="text-xs text-gray-500 mb-1">
-                        {card.subtypes.slice(0, 2).map(st => getSubtypeTranslation(st)).join(", ")}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-400">{getRarityTranslation(card.rarity)}</p>
-                    {card.attack !== undefined && (
-                      <p className="text-xs text-gray-300 mt-1">
-                        ATK:{card.attack} DEF:{card.defense}
-                      </p>
-                    )}
-                    {card.abilities && card.abilities.length > 0 && (
-                      <p className="text-xs text-yellow-400 mt-1">
-                        {card.abilities.length} {t("card.abilities")}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setOpenedCards(null)}
-                className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-900 font-bold rounded-lg hover:from-yellow-400 hover:to-orange-400 transition-colors"
-              >
-                {t("packs.close")}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Lista de sobres */}
-        {packs.length === 0 ? (
-          <div className="text-center text-gray-400 text-xl">
-            {t("packs.noPacks")}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {packs.map((pack) => (
-              <div
-                key={pack.id}
-                className="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-600 hover:border-yellow-500 transition-all duration-300"
-              >
-                <div className="text-center mb-4">
-                  <div className="text-6xl mb-3">📦</div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {pack.packType.name}
-                  </h3>
-                  <p className="text-gray-400 text-sm mb-4">
-                    {pack.packType.description}
-                  </p>
-                </div>
-
-                <div className="space-y-2 mb-4 text-sm">
-                  <div className="flex justify-between text-gray-300">
-                    <span>{t("packs.quantity")}:</span>
-                    <span className="font-bold text-yellow-400">{pack.quantity}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-300">
-                    <span>{t("packs.cardsPerPack")}:</span>
-                    <span>{pack.packType.cardsPerPack}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => openPack(pack.id)}
-                  disabled={openingPack === pack.id || pack.quantity <= 0}
-                  className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-gray-900 font-bold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {openingPack === pack.id ? t("packs.opening") : t("packs.openPack")}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
-  );
+  return <GameShell section={en ? "Packs" : "Sobres"}>
+    <CommandHeading eyebrow={en ? "The armory" : "La armería"} title={en ? "Expand your arsenal" : "Amplía tu arsenal"}>{en ? "Open your packs or find your next addition. Check the cost and rarity chances of each pack." : "Abre tus sobres o encuentra tu próxima incorporación. Consulta el costo y las probabilidades de cada sobre."}</CommandHeading>
+    <div className="command-tabs" role="group" aria-label={en ? "Pack section" : "Sección de sobres"}><button aria-pressed={tab === "inventory"} onClick={() => setTab("inventory")}>{en ? "My packs" : "Mis sobres"} · {inventory.reduce((sum, pack) => sum + pack.quantity, 0)}</button><button aria-pressed={tab === "shop"} onClick={() => setTab("shop")}>{en ? "Shop" : "Armería"}</button></div>
+    {message && <div className="command-notice" role="status"><p>{message}</p>{tab === "shop" && <button className="command-text-link" onClick={() => setTab("inventory")}>{en ? "See my packs" : "Ver mis sobres"}<CommandIcon name="arrow" width="15" /></button>}</div>}
+    {failure && <CommandError message={failure} />}
+    {error ? <CommandError message={error} retry={reload} /> : loading && !data ? <CommandLoading /> : tab === "inventory" ? inventory.length ? <div className="command-pack-grid">{inventory.map(pack => <article className="command-panel command-pack" key={pack.id}><PackVisual pack={pack.packType} en={en} /><PackInfo pack={pack.packType} en={en} /><div className="command-purchase"><p className="command-results-line">{pack.quantity} {en ? "available" : "disponibles"}</p><button className="command-button" disabled={Boolean(busy) || loading} onClick={() => void open(pack)}><CommandIcon name="packs" />{busy === pack.id ? (en ? "Opening…" : "Abriendo…") : en ? "Open one pack" : "Abrir un sobre"}</button></div></article>)}</div> : <CommandEmpty icon="packs" title={en ? "No unopened packs" : "No tienes sobres por abrir"} action={<button className="command-button" onClick={() => setTab("shop")}>{en ? "Explore the armory" : "Explorar la armería"}<CommandIcon name="arrow" /></button>}>{en ? "Visit the armory to get cards and discover new strategies." : "Visita la armería para conseguir cartas y descubrir nuevas estrategias."}</CommandEmpty> : <div className="command-pack-grid">{data?.shopPacks.filter(pack => pack.priceGold > 0 || pack.priceGems > 0).map(pack => <article className="command-panel command-pack" key={pack.id}><PackVisual pack={pack} en={en} /><PackInfo pack={pack} en={en} /><Purchase pack={pack} gold={data.gold} gems={data.gems} busy={Boolean(busy) || loading} en={en} buy={(currency, quantity) => void buy(pack, currency, quantity)} /></article>)}</div>}
+    {showResults && opened && <CommandDialog wide title={en ? "Your new cards" : "Tus nuevas cartas"} onClose={() => setShowResults(false)}><p style={{ marginBottom: 20 }}>{en ? "Added to your collection. Select a card to inspect its abilities." : "Añadidas a tu colección. Selecciona una carta para consultar sus habilidades."}</p><div className="command-archive-grid">{opened.map((card, index) => <ArchiveCard key={card.id + "-" + index} card={card} onClick={() => { setShowResults(false); setSelected(card); }} />)}</div><div className="command-dialog-actions"><Link className="command-button is-secondary" href="/collection">{en ? "View collection" : "Ver colección"}</Link><button className="command-button" onClick={() => setShowResults(false)}>{en ? "Continue" : "Continuar"}</button></div></CommandDialog>}
+    {selected && <CardDetail card={selected} onClose={() => { setSelected(null); setShowResults(true); }} />}
+  </GameShell>;
 }

@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fable Armageddon
 
-## Getting Started
+## Development
 
-First, run the development server:
+Requirements: Node.js 22 or 24, npm and Docker Compose. Install dependencies with `npm ci`.
+
+Run the local server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Local PostgreSQL with Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+If you want Docker only for the database:
 
-## Learn More
+1. Copy the database env file:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cp .env.db.example .env.db
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Copy the app env file:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cp .env.local.example .env
+```
 
-## Deploy on Vercel
+Replace all placeholder passwords and secrets before starting. Use a separate random value for `NEXTAUTH_SECRET`. Generate each value with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Set the same database password in `.env.db`, `DATABASE_URL` and `DIRECT_URL`. Prisma CLI and Next.js both read `.env`; an existing `.env.local` can override Next.js settings and should refer to the same local database.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Start PostgreSQL only:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker compose --env-file .env.db -f docker-compose.db.yml up -d
+```
+
+4. Run Prisma migrations:
+
+```bash
+npx prisma migrate deploy
+```
+
+5. Seed the database once:
+
+```bash
+npm run seed
+```
+
+6. Start the app locally:
+
+```bash
+npm run dev
+```
+
+Stop the local database with:
+
+```bash
+docker compose --env-file .env.db -f docker-compose.db.yml down
+```
+
+### Starter decks
+
+New players are sent to `/starter-decks` after signing in for the first time. They can claim one of four introductory decks. The claim creates the deck, grants its cards and basic mana, and can only be used once per player.
+
+The starter-deck migration is included in `prisma/migrations`; apply it with `npx prisma migrate deploy` when setting up another environment.
+
+## Database
+
+The project uses:
+
+- Prisma
+- PostgreSQL
+
+Local development currently reads connection settings from `.env`.
+
+## Production deployment
+
+The production application runs as a non-root user. PostgreSQL has no published port; the application binds to the server's loopback interface for an HTTPS reverse proxy. Real environment files, local databases and backups must stay private.
+
+This repository now includes:
+
+- `Dockerfile`
+- `docker-compose.yml`
+- `.env.production.example`
+- `DEPLOYMENT.md`
+
+For a clean VPS deployment with Docker Compose and PostgreSQL, follow:
+
+```text
+DEPLOYMENT.md
+```
+
+## Verification
+
+```bash
+npm test
+npm run build
+npm audit --omit=dev
+```
+
+`npm test` runs the game rules, pack rules, combat geometry and registration validation tests. Database integration tests require a prepared database and run separately with `npm run test:integration`.
+
+To verify a fresh Docker installation with disposable, isolated containers and synthetic credentials:
+
+```bash
+docker build -t fable-armageddon:publish-check .
+npm run test:docker
+```
+
+This checks migrations, repeatable seed, a non-root runtime, private-file exclusions, registration and login. It removes only its own temporary containers and volume when finished.
+
+Only sanitized `.env*.example` templates belong in Git. Real credentials and database files are excluded from Git and Docker build contexts.

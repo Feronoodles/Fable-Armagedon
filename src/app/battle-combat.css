@@ -1,0 +1,57 @@
+/* Combat runs above both fields and the feedback strip, without moving the lane layout. */
+.battle-card-in-combat{visibility:hidden;pointer-events:none}
+.battle-combat-overlay{position:absolute;inset:0;z-index:45;overflow:hidden;pointer-events:none}
+.battle-clash-card{position:absolute;transform-origin:center;will-change:transform;animation:battleCardClash var(--combat-duration) cubic-bezier(.22,.75,.3,1) both}
+.battle-clash-card>.battle-field-card{width:100%!important;height:100%!important;border-color:#fcd34d;overflow:hidden;transform:none!important;transition:none;animation:none;box-shadow:0 0 0 1px #fef3c740,0 12px 25px #000a,0 0 20px #fbbf2433}
+.battle-clash-card[data-combat-role="attacker"]{z-index:2}
+.battle-clash-impact{position:absolute;z-index:5;width:var(--impact-size);height:var(--impact-size);transform:translate(-50%,-50%)}
+.battle-clash-core,.battle-clash-wave,.battle-clash-cut,.battle-clash-impact>i{position:absolute;opacity:0;animation-duration:var(--combat-duration);animation-timing-function:ease-out;animation-fill-mode:both}
+.battle-clash-core{inset:-25%;border-radius:50%;background:radial-gradient(circle,#fff 0 5%,#fef3c7eb 12%,#fbbf2480 28%,#f9731620 48%,transparent 70%);mix-blend-mode:screen;animation-name:battleClashCore}
+.battle-clash-wave{inset:5%;border:2px solid #fde68a;border-radius:50%;box-shadow:0 0 12px #f59e0b,inset 0 0 10px #fde68a66;animation-name:battleClashWave}
+.battle-clash-cut{top:48%;left:-20%;width:140%;height:3px;border-radius:50%;background:#fff7d6;box-shadow:0 0 10px #fde68a;--cut-angle:-32deg;animation-name:battleClashCut}
+.battle-clash-cut.is-crossed{--cut-angle:32deg}
+.battle-clash-impact>i{top:50%;left:50%;width:3px;height:15px;border-radius:100%;background:#fef3c7;box-shadow:0 0 7px #f59e0b;animation-name:battleClashSpark}
+@keyframes battleCardClash{
+  0%,100%{transform:translate3d(0,0,0) scale(1) rotate(0)}
+  14%{transform:translate3d(var(--combat-pull-x),var(--combat-pull-y),0) scale(.96) rotate(var(--combat-tilt))}
+  39%,43%{transform:translate3d(var(--combat-x),var(--combat-y),0) scale(var(--combat-scale)) rotate(0)}
+  50%{transform:translate3d(calc(var(--combat-x)*.95),calc(var(--combat-y)*.95),0) scale(1.035) rotate(0)}
+  59%{transform:translate3d(calc(var(--combat-x)*.9),calc(var(--combat-y)*.9),0) scale(1.045) rotate(0)}
+  89%{transform:translate3d(0,var(--combat-rebound),0) scale(.99) rotate(0)}
+}
+@keyframes battleClashCore{0%,34%{opacity:0;transform:scale(.2)}40%{opacity:1;transform:scale(1.15)}55%{opacity:.6}76%,100%{opacity:0;transform:scale(1.9)}}
+@keyframes battleClashWave{0%,36%{opacity:0;transform:scale(.25)}41%{opacity:1;transform:scale(.65)}78%,100%{opacity:0;transform:scale(2.4)}}
+@keyframes battleClashCut{0%,36%{opacity:0;transform:rotate(var(--cut-angle)) scaleX(.15)}41%{opacity:1;transform:rotate(var(--cut-angle)) scaleX(1)}61%,100%{opacity:0;transform:rotate(var(--cut-angle)) scaleX(1.35)}}
+@keyframes battleClashSpark{0%,37%{opacity:0;transform:translate(-50%,-50%) rotate(var(--spark-angle)) translateY(0) scaleY(.4)}42%{opacity:1}76%,100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--spark-angle)) translateY(calc(var(--impact-size)*-.9)) scaleY(.15)}}
+
+/* The intact face disappears as twelve pieces of that same face fly apart. */
+.battle-lane:has(.battle-card-destroying){z-index:40}
+.battle-lane .battle-card-destroying,.battle-card-destroying{overflow:visible!important;pointer-events:none;transition:none;animation:battleShatterFrame 1400ms linear both}
+.battle-card-destroying:hover{transform:none}
+.battle-card-destroying>.battle-card-face,.battle-card-destroying::before{animation:battleShatterFace 180ms ease-in both}
+.battle-destruction-overlay{border-radius:inherit;overflow:visible}
+.battle-shatter-fragment{position:absolute;inset:-2px;overflow:hidden;border:2px solid #94a3b8;border-radius:inherit;background:#0f172a;will-change:transform,opacity;animation:battleShatterFragment 1180ms cubic-bezier(.12,.65,.3,1) 160ms both}
+.battle-shatter-fragment>.battle-card-face{box-shadow:inset 0 0 12px #fbbf2440}
+.battle-shatter-flash{position:absolute;z-index:3;inset:-35%;border-radius:50%;background:radial-gradient(circle,#fff 0 6%,#fef3c7e6 14%,#fbbf2480 30%,#f9731633 49%,transparent 70%);mix-blend-mode:screen;animation:battleShatterFlash 900ms ease-out both}
+.battle-shatter-ring{position:absolute;z-index:2;inset:10% -8%;border:2px solid #fdba74;border-radius:50%;box-shadow:0 0 16px #f9731680;animation:battleShatterRing 1050ms ease-out both}
+.battle-shatter-embers{position:absolute;inset:0;z-index:4}
+.battle-shatter-embers>i{position:absolute;top:46%;left:49%;width:3px;height:7px;border-radius:50%;background:#fef3c7;box-shadow:0 0 7px #fb923c;opacity:0;animation:battleShatterEmber 1100ms ease-out 150ms both}
+@keyframes battleShatterFrame{0%{filter:brightness(1)}10%{filter:brightness(1.8)}15%,100%{filter:none;border-color:transparent;box-shadow:none;background:transparent}}
+@keyframes battleShatterFace{0%,65%{opacity:1;filter:brightness(1)}100%{opacity:0;filter:brightness(2)}}
+@keyframes battleShatterFragment{
+  0%{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1);filter:brightness(1.8)}
+  16%{opacity:1;filter:brightness(1.2)}
+  54%{opacity:.95;transform:translate3d(var(--fragment-x),var(--fragment-y),0) rotate(var(--fragment-rotation)) scale(.8);filter:brightness(1)}
+  100%{opacity:0;transform:translate3d(var(--fragment-x),var(--fragment-fall),0) rotate(var(--fragment-rotation)) scale(.25);filter:brightness(.6)}
+}
+@keyframes battleShatterFlash{0%{opacity:0;transform:scale(.15)}17%{opacity:1;transform:scale(1)}55%,100%{opacity:0;transform:scale(1.8)}}
+@keyframes battleShatterRing{0%,12%{opacity:0;transform:scale(.2)}23%{opacity:.9;transform:scale(.7)}100%{opacity:0;transform:scale(2.6)}}
+@keyframes battleShatterEmber{0%{opacity:0;transform:rotate(var(--ember-angle)) translateY(0)}12%{opacity:1}100%{opacity:0;transform:rotate(var(--ember-angle)) translateY(calc(var(--ember-distance)*-1)) scale(.1)}}
+[data-effects-paused="true"] .battle-card-destroying,[data-effects-paused="true"] .battle-card-destroying::before,[data-effects-paused="true"] .battle-card-destroying *,[data-effects-paused="true"] .battle-combat-overlay *{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){
+  .battle-clash-card{animation:none}
+  .battle-clash-impact{display:none}
+  .battle-card-destroying{animation:battleShatterFrame 180ms linear both!important}
+  .battle-card-destroying>.battle-card-face,.battle-card-destroying::before{animation:battleShatterFace 180ms ease-out both}
+  .battle-destruction-overlay{display:none}
+}

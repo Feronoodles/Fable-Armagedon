@@ -2,8 +2,13 @@
 
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./card-theme.css";
+import "./battle-feedback.css";
+import "./battle-combat.css";
+import "./command-ui.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import I18nProvider from "@/components/I18nProvider";
+import { PlayerProvider } from "@/components/command/PlayerProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +35,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <I18nProvider>{children}</I18nProvider>
+          <I18nProvider><PlayerProvider>{children}</PlayerProvider></I18nProvider>
         </AuthProvider>
       </body>
     </html>
